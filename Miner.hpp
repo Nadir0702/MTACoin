@@ -19,7 +19,7 @@ private:
 public:
 
     void SetMinerID(int i_Id) { this->m_MinerID = i_Id; }
-    static void* MinerFlow(void* arg);
+    static void* StartMinerFlow(void* i_Miner);
 };
 
 #endif // MINER_HPP

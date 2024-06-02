@@ -1,15 +1,15 @@
 #include "Miner.hpp"
 
-void* Miner::MinerFlow(void* arg)
+void* Miner::StartMinerFlow(void* i_Miner)
 {
-    Miner* miner = static_cast<Miner*>(arg);
+    Miner* miner = static_cast<Miner*>(i_Miner);
 
     miner->Mine();
 
-    return arg;
+    return i_Miner;
 }
 
 void Miner::Mine()
-{
-    std::cout << this->m_MinerID << "\n";
+{    
+    std::cout << "Thread #" << pthread_self() << " is miner #" << this->m_MinerID << "\n";
 }
