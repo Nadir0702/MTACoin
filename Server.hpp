@@ -6,20 +6,23 @@
 class Server
 {
 private:
-    uLong difficultyLimit;
-    BLOCK_T lastCheckedBlock;
+    uLong m_DifficultyLimit;
+    BLOCK_T m_LastCheckedBlock;
     
     void printHead() const;
     void appendNewBlock(const BLOCK_T& i_SuggestedBlock) const;
     bool noNewBlockSuggested(const BLOCK_T& i_SuggestedBlock) const;
-    bool verifyProofOfWork(const BLOCK_T& i_SuggestedBlock);
     bool isIdenticalBlocks(const BLOCK_T& i_First, const BLOCK_T& i_Second) const;
+    bool checkCRC(const BLOCK_T& i_SuggestedBlock, ulong checkSum) const;
+    bool verifyProofOfWork(const BLOCK_T& i_SuggestedBlock);
    
 public:
-    Server();
-    static void* StartServerFlow(void* i_Server);
-    void CreateGenesisBlock();
+    static bool s_ReadyToAppend;
+
+    void SetServerDifficultyLimit(ulong i_DifficultyLimit) {this->m_DifficultyLimit = i_DifficultyLimit;}
+    void CreateGenesisBlock(int i_Difficulty);
     void ManageBlockChain();
+    static void* StartServerFlow(void* i_Server);
 
 };
 

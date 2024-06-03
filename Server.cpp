@@ -1,15 +1,19 @@
 #include "Server.hpp"
 
+bool Server::s_ReadyToAppend = false;
 
-
-Server::Server()
+void Server::CreateGenesisBlock(int i_Difficulty)
 {
-    this->difficultyLimit = pow(float(2), (float)(32 - g_BlockChainHead.difficulty));
-}
+    int         	height = 0;
+    int         	timestamp = 0;
+    unsigned int    hash = 0;
+    unsigned int    prev_hash = 0;
+    int        	    difficulty = i_Difficulty;
+    int         	nonce = 0;
+    int         	relayed_by = 0;
 
-void Server::CreateGenesisBlock()
-{
-    this->lastCheckedBlock = g_BlockChainHead = g_SuggestedBlock = { 0, 0, 0, 0, 0, 0, 0 };
+    this->m_LastCheckedBlock = g_BlockChainHead = g_SuggestedBlock = { height, timestamp, hash, prev_hash,
+                                                                        difficulty, nonce, relayed_by };
 }
 
 void* Server::StartServerFlow(void* i_Server)
@@ -38,14 +42,22 @@ void Server::ManageBlockChain()
             appendNewBlock(g_SuggestedBlock);
         }
 
+        g_BlockAlreadySuggested = false;
         pthread_mutex_unlock(&g_SuggestedBlockLock);
+        pthread_cond_broadcast(&g_NewSuggestedBlock);
     }
 
 }
 
 void Server::appendNewBlock(const BLOCK_T& i_SuggestedBlock) const
 {
+    s_ReadyToAppend = true;
+    pthread_mutex_lock(&g_HeadLock);
     g_BlockChainHead = i_SuggestedBlock;
+    pthread_mutex_unlock(&g_HeadLock);
+    pthread_cond_broadcast(&g_ServerWriting);
+    s_ReadyToAppend = false;
+
     printHead();
 }
 
@@ -62,7 +74,7 @@ void Server::printHead() const
 
 bool Server::verifyProofOfWork(const BLOCK_T& i_SuggestedBlock)
 {
-    bool verified = false;
+    bool verified;
     ulong checkSum;
     unsigned int crcParams[] = {i_SuggestedBlock.height,
                                 i_SuggestedBlock.timestamp,
@@ -71,16 +83,26 @@ bool Server::verifyProofOfWork(const BLOCK_T& i_SuggestedBlock)
                                 i_SuggestedBlock.relayed_by};
 
     checkSum = crc32(i_SuggestedBlock.prev_hash, (const Bytef*)crcParams, sizeof(crcParams));
+    verified = checkCRC(i_SuggestedBlock, checkSum);
+    this->m_LastCheckedBlock = i_SuggestedBlock;
 
-    if(checkSum == i_SuggestedBlock.hash)
+    return verified;
+}
+
+bool Server::checkCRC(const BLOCK_T& i_SuggestedBlock, ulong checkSum) const
+{
+    bool verified = false;
+
+    if(i_SuggestedBlock.prev_hash == g_BlockChainHead.hash)
     {
-        if(i_SuggestedBlock.hash < this->difficultyLimit)
+        if(checkSum == i_SuggestedBlock.hash)
         {
-            verified = true;
+            if(i_SuggestedBlock.hash < this->m_DifficultyLimit)
+            {
+                verified = true;
+            }
         }
     }
-
-    this->lastCheckedBlock = i_SuggestedBlock;
 
     return verified;
 }
@@ -88,7 +110,7 @@ bool Server::verifyProofOfWork(const BLOCK_T& i_SuggestedBlock)
 bool Server::noNewBlockSuggested(const BLOCK_T& i_SuggestedBlock) const
 {
     return isIdenticalBlocks(g_BlockChainHead, g_SuggestedBlock) ||
-           isIdenticalBlocks(g_SuggestedBlock, this->lastCheckedBlock);
+           isIdenticalBlocks(g_SuggestedBlock, this->m_LastCheckedBlock);
 }
 
 bool Server::isIdenticalBlocks(const BLOCK_T& i_First, const BLOCK_T& i_Second) const
@@ -105,4 +127,3 @@ bool Server::isIdenticalBlocks(const BLOCK_T& i_First, const BLOCK_T& i_Second) 
 
     return result;
 }
-

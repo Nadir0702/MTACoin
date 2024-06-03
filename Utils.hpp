@@ -6,6 +6,7 @@
 #include <iostream>
 #include <zlib.h>
 #include <math.h>
+#include <ctime>
 
 #define NUM_OF_MINERS 4
 
@@ -22,6 +23,9 @@ typedef struct {
 extern BLOCK_T g_SuggestedBlock;
 extern BLOCK_T g_BlockChainHead; 
 extern pthread_mutex_t g_SuggestedBlockLock;
+extern pthread_mutex_t g_HeadLock;
+extern pthread_cond_t g_ServerWriting;
 extern pthread_cond_t g_NewSuggestedBlock;
+extern bool g_BlockAlreadySuggested;
 
 #endif // UTILS_HPP
