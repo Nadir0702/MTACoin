@@ -4,9 +4,28 @@ void* Miner::StartMinerFlow(void* i_Miner)
 {
     Miner* miner = static_cast<Miner*>(i_Miner);
 
-    miner->mine();
+    if(miner->m_MinerID == DUMMY_MINER_ID)
+    {
+        miner->dummyMinerFlow();
+    }
+    else
+    {
+        miner->mine();
+    }
 
     return i_Miner;
+}
+
+void Miner::dummyMinerFlow()
+{
+    this->m_Hash = this->m_DifficultyLimit;
+
+    while (true)
+    {
+        applyForSuggestion();
+        sleep(1);
+    }
+    
 }
 
 void Miner::mine()
@@ -27,24 +46,30 @@ void Miner::mine()
         getHash();
         if(isValidHash())
         {
-            this->m_wasSuggestionSent = false;
-            while(this->m_wasSuggestionSent == false)
-            {
-                pthread_mutex_lock(&g_SuggestedBlockLock);
-                if(g_BlockAlreadySuggested == true)
-                {
-                    pthread_cond_wait(&g_NewSuggestedBlock, &g_SuggestedBlockLock);
-                }
-
-                if(g_BlockAlreadySuggested == false)
-                {
-                    suggestBlock(); 
-                }
-
-                pthread_mutex_unlock(&g_SuggestedBlockLock);
-                pthread_cond_broadcast(&g_NewSuggestedBlock);
-            }
+            applyForSuggestion();
         }  
+    }
+}
+
+void Miner::applyForSuggestion()
+{
+    this->m_wasSuggestionSent = false;
+
+    while(this->m_wasSuggestionSent == false)
+    {
+        pthread_mutex_lock(&g_SuggestedBlockLock);
+        if(g_BlockAlreadySuggested == true)
+        {
+            pthread_cond_wait(&g_NewSuggestedBlock, &g_SuggestedBlockLock);
+        }
+
+        if(g_BlockAlreadySuggested == false)
+        {
+            suggestBlock(); 
+        }
+
+        pthread_mutex_unlock(&g_SuggestedBlockLock);
+        pthread_cond_broadcast(&g_NewSuggestedBlock);
     }
 }
 

@@ -13,10 +13,12 @@ bool g_BlockAlreadySuggested = false;
 int main(int argc, char* argv[])
 {
     Server server;
+    Miner dummyMiner;
     Miner miners[NUM_OF_MINERS];
     pthread_t serverThreadID;
+    pthread_t dummyMinerID;
     pthread_t minerThreadsIDs[NUM_OF_MINERS];
-    int difficulty = 20; // atoi(argv[1]);
+    int difficulty = 31; // atoi(argv[1]);
     ulong difficultyLimit = pow(float(2), (float)(SIZE_OF_CRC_RESULT - difficulty));
 
     pthread_mutex_init(&g_HeadLock, NULL);
@@ -33,6 +35,10 @@ int main(int argc, char* argv[])
         miners[i].SetMinerDifficultyLimit(difficultyLimit);
         pthread_create(&minerThreadsIDs[i], NULL, Miner::StartMinerFlow, &miners[i]);
     }
+
+    dummyMiner.SetMinerID(DUMMY_MINER_ID);
+    dummyMiner.SetMinerDifficultyLimit(difficultyLimit);
+    pthread_create(&dummyMinerID, NULL, Miner::StartMinerFlow, &dummyMiner);
     
     for (size_t i = 0; i < NUM_OF_MINERS; i++)
     {

@@ -21,6 +21,8 @@ private:
     void getHash();
     void suggestBlock();
     void readDataFromHeadBlock();
+    void applyForSuggestion();
+    void dummyMinerFlow();
     void printSuggestion() const;
     bool isValidHash() const;
     
