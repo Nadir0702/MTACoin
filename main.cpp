@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include "Miner.hpp"
 #include "Utils.hpp"
+#include "Exception.hpp"
 
 BLOCK_T g_SuggestedBlock;
 BLOCK_T g_BlockChainHead;
@@ -18,9 +19,19 @@ int main(int argc, char* argv[])
     pthread_t serverThreadID;
     pthread_t dummyMinerID;
     pthread_t minerThreadsIDs[NUM_OF_MINERS];
-    int difficulty = 31; // atoi(argv[1]);
-    ulong difficultyLimit = pow(float(2), (float)(SIZE_OF_CRC_RESULT - difficulty));
+    int difficulty = 20; // atoi(argv[1]);
+    try
+    {
+        Exception::ValidateDifficulty(difficulty);
+    }
+    catch(const Exception& error)
+    {
+        error.Print();
+        exit(1);
+    }
 
+    ulong difficultyLimit = pow(float(2), (float)(SIZE_OF_CRC_RESULT - difficulty));
+    
     pthread_mutex_init(&g_HeadLock, NULL);
     pthread_mutex_init(&g_SuggestedBlockLock, NULL);
 	pthread_cond_init(&g_NewSuggestedBlock, NULL);

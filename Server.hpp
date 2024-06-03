@@ -2,6 +2,7 @@
 #define SERVER_HPP
 
 #include "Utils.hpp"
+#include "Exception.hpp"
 
 class Server
 {
@@ -11,10 +12,10 @@ private:
     
     void printHead() const;
     void appendNewBlock(const BLOCK_T& i_SuggestedBlock) const;
+    void verifyProofOfWork(const BLOCK_T& i_SuggestedBlock);
     bool noNewBlockSuggested(const BLOCK_T& i_SuggestedBlock) const;
     bool isIdenticalBlocks(const BLOCK_T& i_First, const BLOCK_T& i_Second) const;
     bool checkCRC(const BLOCK_T& i_SuggestedBlock, ulong checkSum) const;
-    bool verifyProofOfWork(const BLOCK_T& i_SuggestedBlock);
    
 public:
     static bool s_ReadyToAppend;

@@ -7,6 +7,8 @@
 #include <zlib.h>
 #include <math.h>
 #include <ctime>
+#include <string>
+#include <sstream>
 
 #define NUM_OF_MINERS 4
 #define INITIAL_PREV_HASH 17

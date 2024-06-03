@@ -35,11 +35,16 @@ void Server::ManageBlockChain()
             pthread_cond_wait(&g_NewSuggestedBlock, &g_SuggestedBlockLock);
         }
 
-        if(verifyProofOfWork(g_SuggestedBlock))
+        try
         {
+            verifyProofOfWork(g_SuggestedBlock);
             appendNewBlock(g_SuggestedBlock);
         }
-
+        catch(const Exception& error)
+        {
+            error.Print();
+        }
+   
         g_BlockAlreadySuggested = false;
         pthread_mutex_unlock(&g_SuggestedBlockLock);
         pthread_cond_broadcast(&g_NewSuggestedBlock);
@@ -64,13 +69,13 @@ void Server::printHead() const
     std::cout << "server: New block added by " << g_BlockChainHead.relayed_by << ", attributes: ";
     std::cout << "height(" << g_BlockChainHead.height << ") ";
     std::cout << "timestamp(" << g_BlockChainHead.timestamp << ") ";
-    std::cout << "hash(" << std::hex << std::showbase << g_BlockChainHead.hash << ") ";
-    std::cout << "prev_hash(" << g_BlockChainHead.prev_hash << std::dec << ") ";
+    std::cout << "hash(0x" << std::hex << g_BlockChainHead.hash << ") ";
+    std::cout << "prev_hash(0x" << g_BlockChainHead.prev_hash << std::dec << ") ";
     std::cout << "difficulty(" << g_BlockChainHead.difficulty << ") ";
     std::cout << "nonce(" << g_BlockChainHead.nonce << ") \n";
 }
 
-bool Server::verifyProofOfWork(const BLOCK_T& i_SuggestedBlock)
+void Server::verifyProofOfWork(const BLOCK_T& i_SuggestedBlock)
 {
     bool verified;
     ulong checkSum;
@@ -80,11 +85,9 @@ bool Server::verifyProofOfWork(const BLOCK_T& i_SuggestedBlock)
                                 i_SuggestedBlock.nonce,
                                 i_SuggestedBlock.relayed_by};
 
+    this->m_LastCheckedBlock = i_SuggestedBlock;
     checkSum = crc32(i_SuggestedBlock.prev_hash, (const Bytef*)crcParams, sizeof(crcParams));
     verified = checkCRC(i_SuggestedBlock, checkSum);
-    this->m_LastCheckedBlock = i_SuggestedBlock;
-
-    return verified;
 }
 
 bool Server::checkCRC(const BLOCK_T& i_SuggestedBlock, ulong checkSum) const
@@ -93,14 +96,40 @@ bool Server::checkCRC(const BLOCK_T& i_SuggestedBlock, ulong checkSum) const
 
     if(i_SuggestedBlock.prev_hash == g_BlockChainHead.hash)
     {
-        if(checkSum == i_SuggestedBlock.hash)
+        if(i_SuggestedBlock.height - 1 == g_BlockChainHead.height)
         {
-            if(i_SuggestedBlock.hash < this->m_DifficultyLimit)
+            if(checkSum == i_SuggestedBlock.hash)
             {
-                verified = true;
+                if(i_SuggestedBlock.hash < this->m_DifficultyLimit)
+                {
+                    verified = true;
+                }
+                else
+                {
+                    std::string meassage = ", not eneogh leading 0's";
+                    throw Exception("difficulty", meassage, i_SuggestedBlock);      
+                }
+            }
+            else
+            {
+                std::string meassage = ", received 0x" + Exception::toHexString(i_SuggestedBlock.hash) + 
+                                       " but calculated 0x" + Exception::toHexString(checkSum);
+                throw Exception("hash", meassage, i_SuggestedBlock);
             }
         }
+        else
+        {
+            std::string meassage = ", received " + std::to_string(i_SuggestedBlock.height) + 
+                                       " but expected " + std::to_string(g_BlockChainHead.height);
+                throw Exception("height", meassage, i_SuggestedBlock);
+        }     
     }
+    else
+    {
+        std::string meassage = ", received 0x" + Exception::toHexString(i_SuggestedBlock.prev_hash) + 
+                               " but expected 0x" + Exception::toHexString(g_BlockChainHead.hash) + "\n";
+        throw Exception("prev_hash", meassage, i_SuggestedBlock);
+    }    
 
     return verified;
 }
