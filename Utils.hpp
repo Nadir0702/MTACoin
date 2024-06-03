@@ -9,6 +9,8 @@
 #include <ctime>
 
 #define NUM_OF_MINERS 4
+#define INITIAL_PREV_HASH 17
+#define SIZE_OF_CRC_RESULT 32
 
 typedef struct {
     int         	height;        // Incrementeal ID of the block in the chain

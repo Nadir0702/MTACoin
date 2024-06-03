@@ -16,8 +16,8 @@ int main(int argc, char* argv[])
     Miner miners[NUM_OF_MINERS];
     pthread_t serverThreadID;
     pthread_t minerThreadsIDs[NUM_OF_MINERS];
-    int difficulty = 16;//atoi(argv[1]);
-    ulong difficultyLimit = pow(float(2), (float)(32 - difficulty));
+    int difficulty = 20; // atoi(argv[1]);
+    ulong difficultyLimit = pow(float(2), (float)(SIZE_OF_CRC_RESULT - difficulty));
 
     pthread_mutex_init(&g_HeadLock, NULL);
     pthread_mutex_init(&g_SuggestedBlockLock, NULL);

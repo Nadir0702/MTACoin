@@ -58,8 +58,17 @@ void Miner::suggestBlock()
     g_SuggestedBlock.relayed_by = this->m_MinerID;
     g_SuggestedBlock.timestamp = this->m_Timestamp;
 
+    printSuggestion();
+
     this->m_wasSuggestionSent = true;
     g_BlockAlreadySuggested = true;
+}
+
+void Miner::printSuggestion() const
+{
+    std::cout << "Miner #" << this->m_MinerID;
+    std::cout << ": mined a new block #" << this->m_BlockHeight;
+    std::cout << " with the hash " <<  std::hex << std::showbase << this->m_Hash << std::dec << "\n";
 }
 
 bool Miner::isValidHash() const

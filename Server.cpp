@@ -27,8 +27,6 @@ void* Server::StartServerFlow(void* i_Server)
 
 void Server::ManageBlockChain()
 {
-    std::cout << "Server Thread is up with ID : #" << pthread_self() << "\n";
-
     while (true)
     {
         pthread_mutex_lock(&g_SuggestedBlockLock);
@@ -51,12 +49,12 @@ void Server::ManageBlockChain()
 
 void Server::appendNewBlock(const BLOCK_T& i_SuggestedBlock) const
 {
-    s_ReadyToAppend = true;
     pthread_mutex_lock(&g_HeadLock);
+    s_ReadyToAppend = true;
     g_BlockChainHead = i_SuggestedBlock;
+    s_ReadyToAppend = false;
     pthread_mutex_unlock(&g_HeadLock);
     pthread_cond_broadcast(&g_ServerWriting);
-    s_ReadyToAppend = false;
 
     printHead();
 }
@@ -66,8 +64,8 @@ void Server::printHead() const
     std::cout << "server: New block added by " << g_BlockChainHead.relayed_by << ", attributes: ";
     std::cout << "height(" << g_BlockChainHead.height << ") ";
     std::cout << "timestamp(" << g_BlockChainHead.timestamp << ") ";
-    std::cout << "hash(" << g_BlockChainHead.hash << ") ";
-    std::cout << "prev_hash(" << g_BlockChainHead.prev_hash << ") ";
+    std::cout << "hash(" << std::hex << std::showbase << g_BlockChainHead.hash << ") ";
+    std::cout << "prev_hash(" << g_BlockChainHead.prev_hash << std::dec << ") ";
     std::cout << "difficulty(" << g_BlockChainHead.difficulty << ") ";
     std::cout << "nonce(" << g_BlockChainHead.nonce << ") \n";
 }

@@ -6,7 +6,7 @@
 class Server
 {
 private:
-    uLong m_DifficultyLimit;
+    uLong m_DifficultyLimit = 0;
     BLOCK_T m_LastCheckedBlock;
     
     void printHead() const;
