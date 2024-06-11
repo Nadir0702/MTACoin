@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     pthread_t serverThreadID;
     pthread_t dummyMinerID;
     pthread_t minerThreadsIDs[NUM_OF_MINERS];
-    int difficulty = 20; // atoi(argv[1]);
+    int difficulty = atoi(argv[1]);
     try
     {
         Exception::ValidateDifficulty(difficulty);

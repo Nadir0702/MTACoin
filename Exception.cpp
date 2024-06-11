@@ -13,14 +13,14 @@ Exception::Exception(std::string i_ErrorMessage)
 void Exception::BuildErrorMessage(std::string i_ValueName, std::string i_Detail, const BLOCK_T& i_SuggestedBlock)
 {
     this->m_ErrorMessage = "wrong " + i_ValueName + " for block #" + std::to_string(i_SuggestedBlock.height) +
-                                       " by miner " + std::to_string(i_SuggestedBlock.relayed_by) + i_Detail + "\n";
+                                       " by miner " + std::to_string(i_SuggestedBlock.relayed_by) + i_Detail;
 }
 
 void Exception::ValidateDifficulty(const int i_Difficulty)
 {
     if(i_Difficulty < 0 || i_Difficulty > 31)
     {
-        throw Exception("Error: Invalid Difficulty value!\n");
+        throw Exception("Error: Invalid Difficulty value!");
     }
 }
 

@@ -127,7 +127,7 @@ bool Server::checkCRC(const BLOCK_T& i_SuggestedBlock, ulong checkSum) const
     else
     {
         std::string meassage = ", received 0x" + Exception::toHexString(i_SuggestedBlock.prev_hash) + 
-                               " but expected 0x" + Exception::toHexString(g_BlockChainHead.hash) + "\n";
+                               " but expected 0x" + Exception::toHexString(g_BlockChainHead.hash) ;
         throw Exception("prev_hash", meassage, i_SuggestedBlock);
     }    
 

@@ -22,6 +22,7 @@ void Miner::dummyMinerFlow()
 
     while (true)
     {
+        this->m_BlockHeight++;
         applyForSuggestion();
         sleep(1);
     }
@@ -30,8 +31,6 @@ void Miner::dummyMinerFlow()
 
 void Miner::mine()
 {    
-    std::cout << "Thread #" << pthread_self() << " is miner #" << this->m_MinerID << "\n";
-
     while (true)
     {
         pthread_mutex_lock(&g_HeadLock);
@@ -122,12 +121,14 @@ void Miner::getHash()
 }
 
 void Miner::readDataFromHeadBlock()
-{
+{  
     if(this->m_PrevHash != g_BlockChainHead.hash)
     {
-        this->m_BlockHeight = g_BlockChainHead.height + 1;
-        this->m_Difficulty = g_BlockChainHead.difficulty;
-        this->m_PrevHash = g_BlockChainHead.hash;
         this->m_Nonce = 0;
     }
+
+    this->m_BlockHeight = g_BlockChainHead.height + 1;
+    this->m_Difficulty = g_BlockChainHead.difficulty;
+    this->m_PrevHash = g_BlockChainHead.hash;  
+
 }
